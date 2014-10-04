@@ -25,27 +25,26 @@ public class SettingsActivity extends ListActivity {
         final ArrayList<String> list = new ArrayList<String>();
         list.addAll(Arrays.asList(values));
 
-//        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_2, android.R.id.text1, list) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_2, android.R.id.text1, list) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
-                TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-                TextView text2 = (TextView) view.findViewById(android.R.id.text2);
+                TextView fieldName = (TextView) view.findViewById(android.R.id.text1);
+                TextView fieldValue = (TextView) view.findViewById(android.R.id.text2);
 
-                text1.setText(list.get(position));
-                text2.setText(StorageManager.getCurrentBasePath());
+                fieldName.setText(list.get(position));
+                fieldValue.setText(StorageManager.getCurrentBasePath());
                 return view;
             }
         };
 
         setListAdapter(adapter);
 
-        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-
-                return false;
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //TODO open selection dialog
             }
         });
     }
