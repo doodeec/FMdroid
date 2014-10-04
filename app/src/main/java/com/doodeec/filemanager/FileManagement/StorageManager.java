@@ -10,6 +10,7 @@ import com.doodeec.filemanager.FileManagement.Model.StorageItem;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -80,6 +81,7 @@ public class StorageManager {
                 assert (files != null);
 
                 Arrays.sort(files);
+                Arrays.sort(files, new FileComparator());
 
                 List<StorageItem> content = new ArrayList<StorageItem>();
                 for (File file : files) {
@@ -112,8 +114,20 @@ public class StorageManager {
         }
     }
 
-
-    //TODO handle music
+    /**
+     * @param file file to observe
+     * @return extension of the file
+     */
+    public static String getExtension(File file) {
+        String extension = MimeTypeMap.getFileExtensionFromUrl(file.getAbsolutePath());
+        if (extension.equals("")) {
+            if (file.getAbsolutePath().contains(".mp3")) {
+                extension = "mp3";
+            }
+            //TODO other non-recognizer extensions
+        }
+        return extension;
+    }
 
     /**
      * @param item file to open
@@ -121,12 +135,41 @@ public class StorageManager {
      */
     public static String getMimeType(StorageItem item) {
         String type = null;
-        String extension = MimeTypeMap.getFileExtensionFromUrl(item.getFile().getAbsolutePath());
+        String extension = getExtension(item.getFile());
         if (extension != null) {
             MimeTypeMap mime = MimeTypeMap.getSingleton();
             type = mime.getMimeTypeFromExtension(extension);
         }
 
         return type;
+    }
+
+
+    /**
+     * Comparator for sorting files
+     * Folders will came before single files
+     */
+    private static class FileComparator implements Comparator<File> {
+        public enum FileType {
+            Directory(0),
+            SingleFile(1);
+
+            public Integer mValue;
+
+            private FileType(Integer value) {
+                this.mValue = value;
+            }
+        }
+
+        private FileType getFileType(File file) {
+            return file.isDirectory() ? FileType.Directory : FileType.SingleFile;
+        }
+
+        public int compare(File f1, File f2) {
+            Integer f1val = getFileType(f1).mValue;
+            Integer f2val = getFileType(f2).mValue;
+
+            return f1val.compareTo(f2val);
+        }
     }
 }

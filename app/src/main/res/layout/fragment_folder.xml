@@ -11,6 +11,8 @@
         android:id="@+id/grid_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="@dimen/padding"
+        android:clipToPadding="false"
         android:columnWidth="@dimen/gridview_column_width"
         android:numColumns="auto_fit"
         android:verticalSpacing="@dimen/gridview_column_spacing"

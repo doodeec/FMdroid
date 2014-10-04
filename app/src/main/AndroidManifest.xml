@@ -24,6 +24,8 @@
         <activity
             android:name="com.doodeec.filemanager.SettingsActivity"
             android:label="@string/settings"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="landscape"
             android:parentActivityName="com.doodeec.filemanager.BaseActivity"
             android:theme="@android:style/Theme.Holo.Light">
             <meta-data
