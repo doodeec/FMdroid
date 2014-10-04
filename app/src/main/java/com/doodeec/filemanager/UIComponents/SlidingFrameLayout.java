@@ -6,6 +6,8 @@ import android.widget.LinearLayout;
 
 /**
  * Created by Dusan Doodeec Bartos on 4.10.2014.
+ * <p/>
+ * Component used for animating fragment transactions
  */
 @SuppressWarnings("unused")
 public class SlidingFrameLayout extends LinearLayout {

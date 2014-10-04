@@ -9,9 +9,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.doodeec.filemanager.FileManagement.FolderManipulationInterface;
 import com.doodeec.filemanager.FileManagement.Model.StorageItem;
 import com.doodeec.filemanager.FileManagement.StorageManager;
 import com.doodeec.filemanager.UIComponents.FolderFragment;
@@ -19,12 +19,14 @@ import com.doodeec.filemanager.UIComponents.FolderFragment;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Created by Dusan Doodeec Bartos on 3.10.2014.
+ * <p/>
+ * Base application activity - entry point
+ */
+public class BaseActivity extends Activity implements FolderManipulationInterface {
 
-public class BaseActivity extends Activity {
-
-    private FrameLayout contentFrame;
     private FragmentManager mFragmentManager;
-    private FragmentTransaction mTransaction;
     private List<StorageItem> mSelectedFiles;
     private boolean mSelectModeActive = false;
 
@@ -36,31 +38,34 @@ public class BaseActivity extends Activity {
         StorageItem.init(getApplicationContext());
         StorageManager.setContext(this);
 
-        contentFrame = (FrameLayout) findViewById(R.id.content_view);
-
         mFragmentManager = getFragmentManager();
         mSelectedFiles = new ArrayList<StorageItem>();
 
-        assert (contentFrame != null);
-
-
-        StorageManager.readFolder(new Runnable() {
-            @Override
-            public void run() {
-                openFragment(StorageManager.getCurrentFolder(), null);
-            }
-        });
-        //TODO open base set folder
+        // just checking if fragment transaction won't crash
+        assert (findViewById(R.id.content_view) != null);
     }
 
-    //TODO back button updates current folder
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-    private void openFolderFragment(StorageItem folder) {
-        assert (folder != null);
-
-        openFragment(folder, folder.getName());
+        if (StorageManager.getCurrentFolder() == null) {
+            StorageManager.readFolder(new Runnable() {
+                @Override
+                public void run() {
+                    openFragment(StorageManager.getCurrentFolder(), null);
+                }
+            });
+        } else {
+            openFragment(StorageManager.getCurrentFolder(), StorageManager.getCurrentFolder().getPath());
+        }
     }
 
+    /**
+     * Reads folder content and displays new folder fragment when done
+     *
+     * @param folder folder to open
+     */
     public void readAndOpenFolderFragment(final StorageItem folder) {
         assert (folder != null);
 
@@ -81,16 +86,17 @@ public class BaseActivity extends Activity {
     public void openFragment(StorageItem folder, String folderName) {
         final FolderFragment folderFragment = new FolderFragment();
         folderFragment.setFolder(folder);
+        folderFragment.setInterface(this);
 
-        mTransaction = mFragmentManager.beginTransaction();
-        mTransaction.replace(R.id.content_view, folderFragment, folder.getPath());
-        mTransaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right);
+        FragmentTransaction transaction = mFragmentManager.beginTransaction();
+        transaction.replace(R.id.content_view, folderFragment, folder.getPath());
+        transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right);
 
         if (folderName != null) {
-            mTransaction.addToBackStack(folderName);
+            transaction.addToBackStack(folderName);
         }
 
-        mTransaction.commit();
+        transaction.commit();
     }
 
     /**
@@ -114,7 +120,7 @@ public class BaseActivity extends Activity {
     }
 
     /**
-     * Refreshes folder content and reloads the gridView
+     * Reloads content of currently opened folder
      */
     public void refreshFolder() {
         Log.d("FMDROID", "refresh folder");
@@ -126,6 +132,9 @@ public class BaseActivity extends Activity {
         });
     }
 
+    /**
+     * Reloads content inside gridView
+     */
     public void reloadFolderContent() {
         Log.d("FMDROID", "reload current folder content");
         FolderFragment topFragment = getTopFragment();
@@ -135,13 +144,20 @@ public class BaseActivity extends Activity {
         topFragment.notifyAdapter();
     }
 
-    /**
-     * File clicked - if selection mode active, add file to selection, if selection mode not active, open file/folder
-     * @param clickedItem clicked item
-     */
+
+    @Override
     public void onFileClicked(StorageItem clickedItem) {
         if (mSelectModeActive) {
-            mSelectedFiles.add(clickedItem);
+            if (mSelectedFiles.contains(clickedItem)) {
+                mSelectedFiles.remove(clickedItem);
+
+                //close selection mode if it was the last item
+                if (mSelectedFiles.size() == 0) {
+                    setSelectionMode(false);
+                }
+            } else {
+                mSelectedFiles.add(clickedItem);
+            }
         } else if (clickedItem.getIsDirectory()) {
             readAndOpenFolderFragment(clickedItem);
         } else {
@@ -149,26 +165,27 @@ public class BaseActivity extends Activity {
         }
     }
 
-    /**
-     * Long click action
-     * @param clickedItem long clicked item
-     */
+    @Override
     public void onFileSelected(StorageItem clickedItem) {
         assert (clickedItem != null);
 
         if (!mSelectModeActive) {
             setSelectionMode(true);
         }
-        mSelectedFiles.add(clickedItem);
+
+        if (!mSelectedFiles.contains(clickedItem)) {
+            mSelectedFiles.add(clickedItem);
+        }
     }
 
     /**
      * Determines if file is currently selected or not
+     *
      * @param itemToCheck item to check
      * @return true if item is present in selected files
      */
     public boolean isFileSelected(StorageItem itemToCheck) {
-        for (StorageItem item: mSelectedFiles) {
+        for (StorageItem item : mSelectedFiles) {
             if (item.getFile().getAbsolutePath().equals(itemToCheck.getFile().getAbsolutePath())) {
                 return true;
             }
@@ -178,6 +195,7 @@ public class BaseActivity extends Activity {
 
     /**
      * Turns selection mode on/off
+     *
      * @param isOpened true if selection mode is to be turned on
      */
     private void setSelectionMode(boolean isOpened) {
@@ -190,8 +208,9 @@ public class BaseActivity extends Activity {
      * Deletes all selected files
      */
     private void removeSelectedFiles() {
-        for (StorageItem item: mSelectedFiles) {
-            //TODO enable delete
+        for (StorageItem item : mSelectedFiles) {
+            // for debug purposes
+            Toast.makeText(this, "Delete " + item.getPath(), Toast.LENGTH_SHORT).show();
             /*if (!item.getFile().delete()) {
                 Log.e("FMDROID", "File couldn't be deleted");
             }*/
@@ -199,14 +218,24 @@ public class BaseActivity extends Activity {
         reloadFolderContent();
     }
 
+    /**
+     * @return fragment of currently opened folder
+     */
     private FolderFragment getTopFragment() {
         return (FolderFragment) getFragmentManager().findFragmentByTag(StorageManager.getCurrentFolder().getPath());
     }
 
+    /**
+     * Opens settings activity
+     */
+    private void openSettings() {
+        Intent settingsIntent = new Intent(this, SettingsActivity.class);
+        startActivity(settingsIntent);
+    }
+
     @Override
     public void onBackPressed() {
-        //TODO notify adapter
-        // close selection mode first
+        // close selection mode first (if active)
         if (mSelectModeActive) {
             FolderFragment topFragment = getTopFragment();
             assert (topFragment != null);
@@ -253,7 +282,7 @@ public class BaseActivity extends Activity {
                 refreshFolder();
                 return true;
             case R.id.action_settings:
-                //TODO settings
+                openSettings();
                 return true;
             case R.id.action_remove:
                 removeSelectedFiles();

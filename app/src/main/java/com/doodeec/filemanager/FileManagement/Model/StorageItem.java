@@ -11,6 +11,8 @@ import java.util.List;
 
 /**
  * Created by Dusan Doodeec Bartos on 3.10.2014.
+ * <p/>
+ * Extended File definition, not extending directly because of code separation
  */
 public class StorageItem {
     public static Drawable FOLDER_ICON = null;

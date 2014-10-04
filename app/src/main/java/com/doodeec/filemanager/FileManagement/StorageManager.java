@@ -15,27 +15,56 @@ import java.util.List;
 
 /**
  * Created by Dusan Doodeec Bartos on 3.10.2014.
+ * <p/>
+ * Storage manager handles folder reading/keeping track of currently opened folder
  */
 public class StorageManager {
 
     private static Activity mContext;
     private static String currentPath = "";
+    private static String currentBasePath = "defaultPathToOpen";
     private static HashMap<String, StorageItem> allContent = new HashMap<String, StorageItem>();
 
+    /**
+     * Register context reference for thread callbacks
+     *
+     * @param context activity
+     */
     public static void setContext(Activity context) {
         mContext = context;
     }
 
+    /**
+     * @return currently shown(opened) folder
+     */
     public static StorageItem getCurrentFolder() {
         return allContent.get(currentPath);
     }
 
+    /**
+     * @return currently set base folder (to open when app starts)
+     */
+    public static String getCurrentBasePath() {
+        return currentBasePath;
+    }
+
+    /**
+     * Used initially when folder is not selected yet
+     *
+     * @param doneListener finished callback
+     */
     public static void readFolder(Runnable doneListener) {
         File folder = new File(Environment.getExternalStorageDirectory(), currentPath);
         StorageItem baseFolder = new StorageItem(folder);
         readFolder(baseFolder, doneListener);
     }
 
+    /**
+     * Reads folder content in own thread
+     *
+     * @param folder       folder to read
+     * @param doneListener finished callback
+     */
     public synchronized static void readFolder(final StorageItem folder, final Runnable doneListener) {
         new Thread(new Runnable() {
             @Override
@@ -65,6 +94,9 @@ public class StorageManager {
         }).start();
     }
 
+    /**
+     * Keeps track of currently opened folder (for refreshing functionality)
+     */
     public static void closeFolder() {
         StorageItem currentFolder = allContent.get(currentPath);
         assert (currentFolder != null);
@@ -82,6 +114,11 @@ public class StorageManager {
 
 
     //TODO handle music
+
+    /**
+     * @param item file to open
+     * @return mime type of file, to be added to file intent
+     */
     public static String getMimeType(StorageItem item) {
         String type = null;
         String extension = MimeTypeMap.getFileExtensionFromUrl(item.getFile().getAbsolutePath());

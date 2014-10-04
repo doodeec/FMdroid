@@ -10,11 +10,14 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.doodeec.filemanager.BaseActivity;
+import com.doodeec.filemanager.FileManagement.FolderManipulationInterface;
 import com.doodeec.filemanager.FileManagement.Model.StorageItem;
 import com.doodeec.filemanager.R;
 
 /**
  * Created by Dusan Doodeec Bartos on 3.10.2014.
+ * <p/>
+ * Folder fragment - holds adapter, gridView of all files
  */
 public class FolderFragment extends Fragment {
 
@@ -22,13 +25,23 @@ public class FolderFragment extends Fragment {
     private FolderAdapter mAdapter;
     private GridView mContentGridView;
     private BaseActivity mActivity;
+    private FolderManipulationInterface mInterface;
 
     /**
      * Sets folder which fragment is bind to
+     *
      * @param folder folder
      */
     public void setFolder(StorageItem folder) {
         this.mFolder = folder;
+    }
+
+    /**
+     * Sets interface for folder/file manipulation
+     * @param manipulationInterface interface
+     */
+    public void setInterface(FolderManipulationInterface manipulationInterface) {
+        this.mInterface = manipulationInterface;
     }
 
     @Override
@@ -37,7 +50,6 @@ public class FolderFragment extends Fragment {
         mContentGridView = (GridView) contentView.findViewById(R.id.grid_content);
 
         assert (getActivity() instanceof BaseActivity);
-
         mActivity = (BaseActivity) getActivity();
 
         return contentView;
@@ -53,7 +65,7 @@ public class FolderFragment extends Fragment {
         // bind click listener to open folder/file
         mContentGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                mActivity.onFileClicked(mFolder.getContent().get(position));
+                mInterface.onFileClicked(mFolder.getContent().get(position));
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -62,7 +74,7 @@ public class FolderFragment extends Fragment {
         mContentGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                mActivity.onFileSelected(mFolder.getContent().get(position));
+                mInterface.onFileSelected(mFolder.getContent().get(position));
                 mAdapter.notifyDataSetChanged();
                 return true;
             }
@@ -70,6 +82,7 @@ public class FolderFragment extends Fragment {
     }
 
     /**
+     * Notifies adapter of dataSet changes
      * used when closing selection mode
      */
     public void notifyAdapter() {

@@ -7,6 +7,8 @@ import android.widget.RelativeLayout;
 
 /**
  * Created by Dusan Doodeec Bartos on 4.10.2014.
+ *
+ * Component used to allow selecting gridView items
  */
 @SuppressWarnings("unused")
 public class CheckableItem extends RelativeLayout implements Checkable {

@@ -10,6 +10,8 @@ import com.doodeec.filemanager.UIComponents.CheckableItem;
 
 /**
  * Created by Dusan Doodeec Bartos on 3.10.2014.
+ * <p/>
+ * Storage Holder for Folder Fragment Adapter
  */
 public class StorageItemHolder {
 

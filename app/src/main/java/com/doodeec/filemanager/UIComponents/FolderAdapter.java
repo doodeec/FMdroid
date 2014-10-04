@@ -15,6 +15,8 @@ import java.util.List;
 
 /**
  * Created by Dusan Doodeec Bartos on 3.10.2014.
+ * <p/>
+ * GridView folder adapter
  */
 public class FolderAdapter extends BaseAdapter {
 
@@ -31,7 +33,7 @@ public class FolderAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         StorageItem item = mContentItems.get(position);
-        StorageItemHolder holder = null;
+        StorageItemHolder holder;
 
         // using view holder pattern to reuse views
         if (convertView == null) {
