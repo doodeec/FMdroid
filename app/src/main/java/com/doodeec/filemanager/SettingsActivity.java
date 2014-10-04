@@ -35,6 +35,7 @@ public class SettingsActivity extends ListActivity {
                 TextView fieldValue = (TextView) view.findViewById(android.R.id.text2);
 
                 fieldName.setText(list.get(position));
+                fieldValue.setHint(R.string.default_folder_not_set);
                 fieldValue.setText(StorageManager.getCurrentBasePath());
                 return view;
             }

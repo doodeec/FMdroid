@@ -78,25 +78,66 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
     }
 
     /**
+     * Updates title in action bar to selected files count
+     */
+    private void updateSelectedFilesCountTitle() {
+        String title = String.format(getResources().getString(R.string.select_mode_title), mSelectedFiles.size());
+        updateActionbarFolderTitle(title);
+    }
+
+    /**
+     * Updates title in action bar to given string
+     */
+    private void updateActionbarFolderTitle(String title) {
+        assert (getActionBar() != null);
+        getActionBar().setTitle(title);
+    }
+
+    /**
+     * Updates title in action bar to corresponding path
+     */
+    private void updateActionbarFolderTitle() {
+        assert (getActionBar() != null);
+        getActionBar().setTitle(StorageManager.getCurrentFolder().getPath());
+    }
+
+    /**
+     * Calls open fragment in regular direction (opening folder)
+     * For calling reverse operation (closing folder with unavailable parent)
+     * use {@link #openFragment(com.doodeec.filemanager.FileManagement.Model.StorageItem, String, boolean)}
+     *
+     * @param folder        folder to open
+     * @param backStackName backStack name to track
+     */
+    private void openFragment(StorageItem folder, String backStackName) {
+        openFragment(folder, backStackName, false);
+    }
+
+    /**
      * Opens new folder fragment which will be added to content view
      *
-     * @param folder     folder to open
-     * @param folderName backStack name to track
+     * @param folder        folder to open
+     * @param backStackName backStack name to track
      */
-    public void openFragment(StorageItem folder, String folderName) {
+    private void openFragment(StorageItem folder, String backStackName, boolean reverse) {
         final FolderFragment folderFragment = new FolderFragment();
         folderFragment.setFolder(folder);
         folderFragment.setInterface(this);
 
         FragmentTransaction transaction = mFragmentManager.beginTransaction();
         transaction.replace(R.id.content_view, folderFragment, folder.getPath());
-        transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right);
 
-        if (folderName != null) {
-            transaction.addToBackStack(folderName);
+        if (!reverse) {
+            transaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right);
+            if (backStackName != null) {
+                transaction.addToBackStack(backStackName);
+            }
+        } else {
+            transaction.setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right, R.anim.slide_in_right, R.anim.slide_out_left);
         }
 
         transaction.commit();
+        updateActionbarFolderTitle();
     }
 
     /**
@@ -104,7 +145,7 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
      *
      * @param file file to open
      */
-    public void openFileIntent(StorageItem file) {
+    private void openFileIntent(StorageItem file) {
         assert (file != null);
 
         Uri fileToOpen = Uri.fromFile(file.getFile());
@@ -122,7 +163,7 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
     /**
      * Reloads content of currently opened folder
      */
-    public void refreshFolder() {
+    private void refreshFolder() {
         Log.d("FMDROID", "refresh folder");
         StorageManager.readFolder(StorageManager.getCurrentFolder(), new Runnable() {
             @Override
@@ -135,7 +176,7 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
     /**
      * Reloads content inside gridView
      */
-    public void reloadFolderContent() {
+    private void reloadFolderContent() {
         Log.d("FMDROID", "reload current folder content");
         FolderFragment topFragment = getTopFragment();
         assert (topFragment != null);
@@ -144,7 +185,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
         topFragment.notifyAdapter();
     }
 
-
+    /**
+     * @see com.doodeec.filemanager.FileManagement.FolderManipulationInterface
+     */
     @Override
     public void onFileClicked(StorageItem clickedItem) {
         if (mSelectModeActive) {
@@ -158,6 +201,7 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
             } else {
                 mSelectedFiles.add(clickedItem);
             }
+            updateSelectedFilesCountTitle();
         } else if (clickedItem.getIsDirectory()) {
             readAndOpenFolderFragment(clickedItem);
         } else {
@@ -165,6 +209,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
         }
     }
 
+    /**
+     * @see com.doodeec.filemanager.FileManagement.FolderManipulationInterface
+     */
     @Override
     public void onFileSelected(StorageItem clickedItem) {
         assert (clickedItem != null);
@@ -176,6 +223,7 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
         if (!mSelectedFiles.contains(clickedItem)) {
             mSelectedFiles.add(clickedItem);
         }
+        updateSelectedFilesCountTitle();
     }
 
     /**
@@ -202,6 +250,14 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
         mSelectedFiles.clear();
         mSelectModeActive = isOpened;
         invalidateOptionsMenu();
+
+        if (!isOpened) {
+            FolderFragment topFragment = getTopFragment();
+            assert (topFragment != null);
+
+            topFragment.notifyAdapter();
+            updateActionbarFolderTitle();
+        }
     }
 
     /**
@@ -237,15 +293,19 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
     public void onBackPressed() {
         // close selection mode first (if active)
         if (mSelectModeActive) {
-            FolderFragment topFragment = getTopFragment();
-            assert (topFragment != null);
-
-            topFragment.notifyAdapter();
             setSelectionMode(false);
         } else {
-            StorageManager.closeFolder();
-            super.onBackPressed();
+            if (!StorageManager.closeFolder()) {
+                //root folder reached
+                Toast.makeText(this, "You are in root folder", Toast.LENGTH_LONG).show();
+            } else if (mFragmentManager.getBackStackEntryCount() > 0) {
+                //fragments available to close
+                super.onBackPressed();
+            } else {
+                //parent folder has to be created
+            }
         }
+        updateActionbarFolderTitle();
     }
 
     @Override
@@ -260,6 +320,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
                     isVisible = !mSelectModeActive;
                     break;
                 case R.id.action_remove:
+                    isVisible = mSelectModeActive;
+                    break;
+                case R.id.action_close:
                     isVisible = mSelectModeActive;
                     break;
             }
@@ -286,6 +349,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
                 return true;
             case R.id.action_remove:
                 removeSelectedFiles();
+                return true;
+            case R.id.action_close:
+                setSelectionMode(false);
                 return true;
         }
 

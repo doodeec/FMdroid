@@ -1,6 +1,8 @@
 package com.doodeec.filemanager.FileManagement;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
@@ -21,10 +23,16 @@ import java.util.List;
  */
 public class StorageManager {
 
+    private static final String PREF_KEY = "com.doodeec.fmdroid";
+    private static final String DEFAULT_FOLDER_KEY = "defaultFolder";
+
     private static Activity mContext;
     private static String currentPath = "";
-    private static String currentBasePath = "defaultPathToOpen";
+    private static String currentBasePath = "";
     private static HashMap<String, StorageItem> allContent = new HashMap<String, StorageItem>();
+    private static SharedPreferences mPreferences;
+
+    private static File rootFolder = new File(Environment.getExternalStorageDirectory(), "");
 
     /**
      * Register context reference for thread callbacks
@@ -33,6 +41,9 @@ public class StorageManager {
      */
     public static void setContext(Activity context) {
         mContext = context;
+        mPreferences = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
+
+        currentBasePath = mPreferences.getString(DEFAULT_FOLDER_KEY, "");
     }
 
     /**
@@ -40,6 +51,14 @@ public class StorageManager {
      */
     public static StorageItem getCurrentFolder() {
         return allContent.get(currentPath);
+    }
+
+    /**
+     * Sets base path of folder to open when app is started
+     */
+    public static void setBasePath(String defaultFolder) {
+        currentBasePath = defaultFolder;
+        mPreferences.edit().putString(DEFAULT_FOLDER_KEY, defaultFolder).apply();
     }
 
     /**
@@ -55,7 +74,7 @@ public class StorageManager {
      * @param doneListener finished callback
      */
     public static void readFolder(Runnable doneListener) {
-        File folder = new File(Environment.getExternalStorageDirectory(), currentPath);
+        File folder = currentBasePath.equals("") ? rootFolder : new File(currentBasePath);
         StorageItem baseFolder = new StorageItem(folder);
         readFolder(baseFolder, doneListener);
     }
@@ -80,7 +99,9 @@ public class StorageManager {
                 File[] files = folder.getFile().listFiles();
                 assert (files != null);
 
+                //sorts alphabetically
                 Arrays.sort(files);
+                //sorts folders in the front
                 Arrays.sort(files, new FileComparator());
 
                 List<StorageItem> content = new ArrayList<StorageItem>();
@@ -99,18 +120,23 @@ public class StorageManager {
     /**
      * Keeps track of currently opened folder (for refreshing functionality)
      */
-    public static void closeFolder() {
+    public static boolean closeFolder() {
         StorageItem currentFolder = allContent.get(currentPath);
         assert (currentFolder != null);
 
-        File parentFile = currentFolder.getFile().getParentFile();
-        if (parentFile != null) {
-            if (allContent.get(parentFile.getAbsolutePath()) == null) {
-                StorageItem baseFolder = new StorageItem(parentFile);
-                readFolder(baseFolder, null);
-            } else {
-                currentPath = parentFile.getAbsolutePath();
+        if (currentFolder.getPath().equals(rootFolder.getAbsolutePath())) {
+            return false;
+        } else {
+            File parentFile = currentFolder.getFile().getParentFile();
+            if (parentFile != null) {
+                if (allContent.get(parentFile.getAbsolutePath()) == null) {
+                    StorageItem baseFolder = new StorageItem(parentFile);
+                    readFolder(baseFolder, null);
+                } else {
+                    currentPath = parentFile.getAbsolutePath();
+                }
             }
+            return true;
         }
     }
 
@@ -124,7 +150,7 @@ public class StorageManager {
             if (file.getAbsolutePath().contains(".mp3")) {
                 extension = "mp3";
             }
-            //TODO other non-recognizer extensions
+            //TODO other non-recognized extensions
         }
         return extension;
     }
@@ -150,7 +176,7 @@ public class StorageManager {
      * Folders will came before single files
      */
     private static class FileComparator implements Comparator<File> {
-        public enum FileType {
+        private enum FileType {
             Directory(0),
             SingleFile(1);
 
@@ -166,10 +192,7 @@ public class StorageManager {
         }
 
         public int compare(File f1, File f2) {
-            Integer f1val = getFileType(f1).mValue;
-            Integer f2val = getFileType(f2).mValue;
-
-            return f1val.compareTo(f2val);
+            return getFileType(f1).mValue.compareTo(getFileType(f2).mValue);
         }
     }
 }
