@@ -303,6 +303,7 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
                 super.onBackPressed();
             } else {
                 //parent folder has to be created
+                //TODO create parent folder and silently add (without backstack)
             }
         }
         updateActionbarFolderTitle();
