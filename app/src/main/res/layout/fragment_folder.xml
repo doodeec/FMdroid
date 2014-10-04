@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<GridView
+<com.doodeec.filemanager.UIComponents.SlidingFrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:columnWidth="@dimen/gridview_column_width"
-    android:numColumns="auto_fit"
-    android:verticalSpacing="@dimen/gridview_column_spacing"
-    android:horizontalSpacing="@dimen/gridview_column_spacing"
-    android:stretchMode="columnWidth"
-    android:gravity="center">
+    android:animateLayoutChanges="true"
+    android:background="@android:color/white"
+    android:id="@+id/content_browser_list_fragment">
 
-</GridView>
+    <GridView
+        android:id="@+id/grid_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:columnWidth="@dimen/gridview_column_width"
+        android:numColumns="auto_fit"
+        android:verticalSpacing="@dimen/gridview_column_spacing"
+        android:horizontalSpacing="@dimen/gridview_column_spacing"
+        android:stretchMode="columnWidth"
+        android:gravity="center">
+
+    </GridView>
+</com.doodeec.filemanager.UIComponents.SlidingFrameLayout>

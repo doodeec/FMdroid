@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import com.doodeec.filemanager.BaseActivity;
 import com.doodeec.filemanager.FileManagement.Model.StorageItem;
 import com.doodeec.filemanager.FileManagement.StorageItemHolder;
 import com.doodeec.filemanager.R;
@@ -17,10 +18,12 @@ import java.util.List;
  */
 public class FolderAdapter extends BaseAdapter {
 
+    private BaseActivity mContext;
     private List<StorageItem> mContentItems;
     private LayoutInflater mLayoutInflater;
 
-    public FolderAdapter(Context context, StorageItem folder) {
+    public FolderAdapter(BaseActivity context, StorageItem folder) {
+        this.mContext = context;
         this.mContentItems = folder.getContent();
         this.mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -40,6 +43,7 @@ public class FolderAdapter extends BaseAdapter {
         holder = (StorageItemHolder) convertView.getTag();
         holder.setName(item.getName());
         holder.setIcon(item.getIcon());
+        holder.setSelected(mContext.isFileSelected(item));
 
         return convertView;
     }

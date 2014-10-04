@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
-import android.widget.Toast;
 
 import com.doodeec.filemanager.BaseActivity;
 import com.doodeec.filemanager.FileManagement.Model.StorageItem;
@@ -20,7 +19,9 @@ import com.doodeec.filemanager.R;
 public class FolderFragment extends Fragment {
 
     private StorageItem mFolder;
-    private GridView mContentView;
+    private FolderAdapter mAdapter;
+    private GridView mContentGridView;
+    private BaseActivity mActivity;
 
     /**
      * Sets folder which fragment is bind to
@@ -32,29 +33,38 @@ public class FolderFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        mContentView = (GridView) inflater.inflate(R.layout.fragment_folder, null);
-        return mContentView;
+        View contentView = inflater.inflate(R.layout.fragment_folder, null);
+        mContentGridView = (GridView) contentView.findViewById(R.id.grid_content);
+
+        assert (getActivity() instanceof BaseActivity);
+
+        mActivity = (BaseActivity) getActivity();
+
+        return contentView;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mContentView.setAdapter(new FolderAdapter(getActivity(), mFolder));
+        mAdapter = new FolderAdapter(mActivity, mFolder);
+        mContentGridView.setAdapter(mAdapter);
 
-        mContentView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        // bind click listener to open folder/file
+        mContentGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                Toast.makeText(getActivity(), "" + position, Toast.LENGTH_SHORT).show();
+                mActivity.onFileClicked(mFolder.getContent().get(position));
+                mAdapter.notifyDataSetChanged();
+            }
+        });
 
-                assert (getActivity() instanceof BaseActivity);
-
-                // opens new folder fragment, or file intent
-                StorageItem clickedItem = mFolder.getContent().get(position);
-                if (clickedItem.getIsDirectory()) {
-                    ((BaseActivity) getActivity()).openFolderFragment(clickedItem);
-                } else {
-                    ((BaseActivity) getActivity()).openFileIntent(clickedItem);
-                }
+        // bind long click listener to trigger selection mode
+        mContentGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                mActivity.onFileSelected(mFolder.getContent().get(position));
+                mAdapter.notifyDataSetChanged();
+                return true;
             }
         });
     }
