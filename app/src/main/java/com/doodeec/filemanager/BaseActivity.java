@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.doodeec.filemanager.FileManagement.Model.StorageItem;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class BaseActivity extends Activity {
 
-    private RelativeLayout contentFrame;
+    private FrameLayout contentFrame;
     private FragmentManager mFragmentManager;
     private FragmentTransaction mTransaction;
     private List<StorageItem> mSelectedFiles;
@@ -36,7 +36,7 @@ public class BaseActivity extends Activity {
         StorageItem.init(getApplicationContext());
         StorageManager.setContext(this);
 
-        contentFrame = (RelativeLayout) findViewById(R.id.content_view);
+        contentFrame = (FrameLayout) findViewById(R.id.content_view);
 
         mFragmentManager = getFragmentManager();
         mSelectedFiles = new ArrayList<StorageItem>();
@@ -64,12 +64,12 @@ public class BaseActivity extends Activity {
     public void readAndOpenFolderFragment(final StorageItem folder) {
         assert (folder != null);
 
-        StorageManager.readFolder(new Runnable() {
+        StorageManager.readFolder(folder, new Runnable() {
             @Override
             public void run() {
                 openFragment(folder, folder.getName());
             }
-        }, folder);
+        });
     }
 
     /**
@@ -83,7 +83,7 @@ public class BaseActivity extends Activity {
         folderFragment.setFolder(folder);
 
         mTransaction = mFragmentManager.beginTransaction();
-        mTransaction.add(R.id.content_view, folderFragment);
+        mTransaction.replace(R.id.content_view, folderFragment, folder.getPath());
         mTransaction.setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left, R.anim.slide_in_left, R.anim.slide_out_right);
 
         if (folderName != null) {
@@ -118,7 +118,7 @@ public class BaseActivity extends Activity {
      */
     public void refreshFolder() {
         Log.d("FMDROID", "refresh folder");
-        StorageManager.readFolder(new Runnable() {
+        StorageManager.readFolder(StorageManager.getCurrentFolder(), new Runnable() {
             @Override
             public void run() {
                 reloadFolderContent();
@@ -128,7 +128,11 @@ public class BaseActivity extends Activity {
 
     public void reloadFolderContent() {
         Log.d("FMDROID", "reload current folder content");
-        openFolderFragment(StorageManager.getCurrentFolder());
+        FolderFragment topFragment = getTopFragment();
+        assert (topFragment != null);
+
+        topFragment.setFolder(StorageManager.getCurrentFolder());
+        topFragment.notifyAdapter();
     }
 
     /**
@@ -187,11 +191,16 @@ public class BaseActivity extends Activity {
      */
     private void removeSelectedFiles() {
         for (StorageItem item: mSelectedFiles) {
-            if (!item.getFile().delete()) {
+            //TODO enable delete
+            /*if (!item.getFile().delete()) {
                 Log.e("FMDROID", "File couldn't be deleted");
-            }
+            }*/
         }
         reloadFolderContent();
+    }
+
+    private FolderFragment getTopFragment() {
+        return (FolderFragment) getFragmentManager().findFragmentByTag(StorageManager.getCurrentFolder().getPath());
     }
 
     @Override
@@ -199,8 +208,13 @@ public class BaseActivity extends Activity {
         //TODO notify adapter
         // close selection mode first
         if (mSelectModeActive) {
+            FolderFragment topFragment = getTopFragment();
+            assert (topFragment != null);
+
+            topFragment.notifyAdapter();
             setSelectionMode(false);
         } else {
+            StorageManager.closeFolder();
             super.onBackPressed();
         }
     }
@@ -228,7 +242,7 @@ public class BaseActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.base, menu);
+        getMenuInflater().inflate(R.menu.action_bar, menu);
         return true;
     }
 

@@ -1,18 +1,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".BaseActivity" >
+    tools:context=".BaseActivity">
 
-    <item android:id="@+id/action_refresh"
+    <item
+        android:id="@+id/action_refresh"
         android:icon="@drawable/ic_action_refresh"
         android:title="@string/action_refresh"
-        android:showAsAction="ifRoom"/>
+        android:showAsAction="ifRoom" />
 
-    <item android:id="@+id/action_settings"
+    <item
+        android:id="@+id/action_settings"
         android:icon="@drawable/ic_action_settings"
         android:title="@string/action_settings"
         android:showAsAction="ifRoom" />
 
-    <item android:id="@+id/action_remove"
+    <item
+        android:id="@+id/action_remove"
         android:icon="@drawable/ic_action_remove"
         android:title="@string/action_remove"
         android:visible="false"

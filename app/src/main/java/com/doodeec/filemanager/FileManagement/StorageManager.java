@@ -19,7 +19,6 @@ import java.util.List;
 public class StorageManager {
 
     private static Activity mContext;
-    private static String folderName = "";
     private static String currentPath = "";
     private static HashMap<String, StorageItem> allContent = new HashMap<String, StorageItem>();
 
@@ -34,10 +33,10 @@ public class StorageManager {
     public static void readFolder(Runnable doneListener) {
         File folder = new File(Environment.getExternalStorageDirectory(), currentPath);
         StorageItem baseFolder = new StorageItem(folder);
-        readFolder(doneListener, baseFolder);
+        readFolder(baseFolder, doneListener);
     }
 
-    public synchronized static void readFolder(final Runnable doneListener, final StorageItem folder) {
+    public synchronized static void readFolder(final StorageItem folder, final Runnable doneListener) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -64,6 +63,21 @@ public class StorageManager {
                 mContext.runOnUiThread(doneListener);
             }
         }).start();
+    }
+
+    public static void closeFolder() {
+        StorageItem currentFolder = allContent.get(currentPath);
+        assert (currentFolder != null);
+
+        File parentFile = currentFolder.getFile().getParentFile();
+        if (parentFile != null) {
+            if (allContent.get(parentFile.getAbsolutePath()) == null) {
+                StorageItem baseFolder = new StorageItem(parentFile);
+                readFolder(baseFolder, null);
+            } else {
+                currentPath = parentFile.getAbsolutePath();
+            }
+        }
     }
 
 

@@ -68,4 +68,11 @@ public class FolderFragment extends Fragment {
             }
         });
     }
+
+    /**
+     * used when closing selection mode
+     */
+    public void notifyAdapter() {
+        mAdapter.notifyDataSetChanged();
+    }
 }
