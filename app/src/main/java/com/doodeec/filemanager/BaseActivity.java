@@ -43,11 +43,6 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
 
         // just checking if fragment transaction won't crash
         assert (findViewById(R.id.content_view) != null);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
 
         if (StorageManager.getCurrentFolder() == null) {
             StorageManager.readFolder(new Runnable() {
