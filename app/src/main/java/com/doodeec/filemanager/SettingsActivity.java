@@ -17,6 +17,8 @@ import java.util.Arrays;
 
 public class SettingsActivity extends ListActivity {
 
+    private ArrayAdapter<String> mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,7 +28,7 @@ public class SettingsActivity extends ListActivity {
         final ArrayList<String> list = new ArrayList<String>();
         list.addAll(Arrays.asList(values));
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+        mAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_2, android.R.id.text1, list) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -41,7 +43,7 @@ public class SettingsActivity extends ListActivity {
             }
         };
 
-        setListAdapter(adapter);
+        setListAdapter(mAdapter);
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -54,6 +56,12 @@ public class SettingsActivity extends ListActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override

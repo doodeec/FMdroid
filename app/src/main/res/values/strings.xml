@@ -14,5 +14,6 @@
     <string name="select_mode_title" formatted="false">Select files: %d</string>
 
     <string name="setting_dialog_title">Pick default folder</string>
+    <string name="files_removed">File/s removed</string>
 
 </resources>

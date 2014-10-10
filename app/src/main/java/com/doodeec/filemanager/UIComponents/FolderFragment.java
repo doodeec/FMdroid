@@ -64,7 +64,11 @@ public class FolderFragment extends Fragment {
         // bind click listener to open folder/file
         mContentGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                mInterface.onFileClicked(mFolder.getContent(onlyFolders).get(position));
+                if (mFolder.getContent(onlyFolders).get(position).getIsBlank()) {
+                    mInterface.onUpClicked(mFolder);
+                } else {
+                    mInterface.onFileClicked(mFolder.getContent(onlyFolders).get(position));
+                }
                 mAdapter.notifyDataSetChanged();
             }
         });

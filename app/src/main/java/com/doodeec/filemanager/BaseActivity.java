@@ -235,13 +235,35 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
         updateSelectedFilesCountTitle();
     }
 
+    /**
+     * @see com.doodeec.filemanager.FileManagement.FolderManipulationInterface
+     */
+    @Override
     public boolean isFileSelected(StorageItem itemToCheck) {
+        if (itemToCheck.getFile() == null) return false;
+
         for (StorageItem item : mSelectedFiles) {
             if (item.getFile().getAbsolutePath().equals(itemToCheck.getFile().getAbsolutePath())) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public void onUpClicked(StorageItem folder) {
+        if (!StorageManager.closeFolder()) {
+            //root folder reached
+            Toast.makeText(this, "You are in root folder", Toast.LENGTH_LONG).show();
+        } else if (mFragmentManager.getBackStackEntryCount() > 0) {
+            //fragments available to close
+            mFragmentManager.popBackStack();
+        } else {
+            //parent folder has to be created
+            //TODO create parent folder and silently add (without backstack)
+//            showFolder(StorageItem.createStorageItem(folder.getFile().getParentFile()), false, false);
+            readAndOpenFolderFragment(StorageItem.createStorageItem(folder.getFile().getParentFile()));
+        }
     }
 
     /**
@@ -276,6 +298,7 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
                 Log.e("FMDROID", "File couldn't be deleted");
             }
         }
+        Toast.makeText(this, R.string.files_removed, Toast.LENGTH_SHORT).show();
         reloadFolderContent();
     }
 
@@ -300,16 +323,7 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
         if (mSelectModeActive) {
             setSelectionMode(false);
         } else {
-            if (!StorageManager.closeFolder()) {
-                //root folder reached
-                Toast.makeText(this, "You are in root folder", Toast.LENGTH_LONG).show();
-            } else if (mFragmentManager.getBackStackEntryCount() > 0) {
-                //fragments available to close
-                super.onBackPressed();
-            } else {
-                //parent folder has to be created
-                //TODO create parent folder and silently add (without backstack)
-            }
+            super.onBackPressed();
         }
         updateActionbarFolderTitle();
     }

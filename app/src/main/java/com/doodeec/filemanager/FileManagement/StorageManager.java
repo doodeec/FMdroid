@@ -25,6 +25,7 @@ public class StorageManager {
 
     private static final String PREF_KEY = "com.doodeec.fmdroid";
     private static final String DEFAULT_FOLDER_KEY = "defaultFolder";
+    private static final StorageItem BACK_FOLDER_PLACEHOLDER = StorageItem.createBackPlaceholder();
 
     private static Activity mContext;
     private static String currentPath = "";
@@ -107,6 +108,10 @@ public class StorageManager {
                 Arrays.sort(files, new FileComparator());
 
                 List<StorageItem> content = new ArrayList<StorageItem>();
+
+                //back folder holder
+                content.add(BACK_FOLDER_PLACEHOLDER);
+
                 for (File file : files) {
                     content.add(StorageItem.createStorageItem(file));
                 }

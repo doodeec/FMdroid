@@ -27,4 +27,6 @@ public interface FolderManipulationInterface {
      * @return true if item is present in selected files
      */
     public boolean isFileSelected(StorageItem itemToCheck);
+
+    public void onUpClicked(StorageItem folder);
 }

@@ -24,10 +24,12 @@ public class StorageItem {
         FILE_ICON = context.getResources().getDrawable(R.drawable.ic_action_copy);
     }
 
+    private String mName;
     private File mFile;
     private Drawable mIcon;
     private List<StorageItem> mContentItems;
     private boolean isDirectory = false;
+    private boolean isBlank = false;
 
     public static StorageItem createStorageItem(File file) {
         StorageItem item = new StorageItem(file);
@@ -41,6 +43,17 @@ public class StorageItem {
 
         return item;
     }
+
+    public static StorageItem createBackPlaceholder() {
+        StorageItem item = new StorageItem();
+        item.mIcon = FOLDER_ICON;
+        item.isBlank = true;
+        item.isDirectory = true;
+        item.mName = "..";
+        return item;
+    }
+
+    private StorageItem() {}
 
     public StorageItem(File file) {
         this.mFile = file;
@@ -91,7 +104,7 @@ public class StorageItem {
      * @return node name
      */
     public String getName() {
-        return mFile.getName();
+        return isBlank ? mName : mFile.getName();
     }
 
     /**
@@ -99,5 +112,12 @@ public class StorageItem {
      */
     public boolean getIsDirectory() {
         return isDirectory;
+    }
+
+    /**
+     * @return true if file is placeholder for navigating up the directory tree
+     */
+    public boolean getIsBlank() {
+        return isBlank;
     }
 }
