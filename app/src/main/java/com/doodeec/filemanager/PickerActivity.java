@@ -3,7 +3,6 @@ package com.doodeec.filemanager;
 import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.doodeec.filemanager.FileManagement.FolderManipulationInterface;
 import com.doodeec.filemanager.FileManagement.Model.StorageItem;
