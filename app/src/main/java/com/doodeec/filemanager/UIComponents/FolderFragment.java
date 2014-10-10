@@ -24,7 +24,6 @@ public class FolderFragment extends Fragment {
     private StorageItem mFolder;
     private FolderAdapter mAdapter;
     private GridView mContentGridView;
-    private BaseActivity mActivity;
     private FolderManipulationInterface mInterface;
 
     /**
@@ -38,6 +37,7 @@ public class FolderFragment extends Fragment {
 
     /**
      * Sets interface for folder/file manipulation
+     *
      * @param manipulationInterface interface
      */
     public void setInterface(FolderManipulationInterface manipulationInterface) {
@@ -49,9 +49,6 @@ public class FolderFragment extends Fragment {
         View contentView = inflater.inflate(R.layout.fragment_folder, null);
         mContentGridView = (GridView) contentView.findViewById(R.id.grid_content);
 
-        assert (getActivity() instanceof BaseActivity);
-        mActivity = (BaseActivity) getActivity();
-
         return contentView;
     }
 
@@ -59,13 +56,15 @@ public class FolderFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mAdapter = new FolderAdapter(mActivity, mFolder);
+        final boolean onlyFolders = !(getActivity() instanceof BaseActivity);
+
+        mAdapter = new FolderAdapter(getActivity(), mInterface, mFolder, onlyFolders);
         mContentGridView.setAdapter(mAdapter);
 
         // bind click listener to open folder/file
         mContentGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                mInterface.onFileClicked(mFolder.getContent().get(position));
+                mInterface.onFileClicked(mFolder.getContent(onlyFolders).get(position));
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -74,7 +73,7 @@ public class FolderFragment extends Fragment {
         mContentGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                mInterface.onFileSelected(mFolder.getContent().get(position));
+                mInterface.onFileSelected(mFolder.getContent(onlyFolders).get(position));
                 mAdapter.notifyDataSetChanged();
                 return true;
             }

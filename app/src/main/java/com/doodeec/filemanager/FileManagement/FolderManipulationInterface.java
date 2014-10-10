@@ -19,4 +19,12 @@ public interface FolderManipulationInterface {
      * @param clickedItem long clicked item
      */
     public void onFileSelected(StorageItem clickedItem);
+
+    /**
+     * Determines if file is currently selected or not
+     *
+     * @param itemToCheck item to check
+     * @return true if item is present in selected files
+     */
+    public boolean isFileSelected(StorageItem itemToCheck);
 }

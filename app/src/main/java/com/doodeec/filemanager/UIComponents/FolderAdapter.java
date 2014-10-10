@@ -1,12 +1,13 @@
 package com.doodeec.filemanager.UIComponents;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.doodeec.filemanager.BaseActivity;
+import com.doodeec.filemanager.FileManagement.FolderManipulationInterface;
 import com.doodeec.filemanager.FileManagement.Model.StorageItem;
 import com.doodeec.filemanager.FileManagement.StorageItemHolder;
 import com.doodeec.filemanager.R;
@@ -20,14 +21,14 @@ import java.util.List;
  */
 public class FolderAdapter extends BaseAdapter {
 
-    private BaseActivity mContext;
+    private FolderManipulationInterface mContext;
     private List<StorageItem> mContentItems;
     private LayoutInflater mLayoutInflater;
 
-    public FolderAdapter(BaseActivity context, StorageItem folder) {
+    public FolderAdapter(Activity activity, FolderManipulationInterface context, StorageItem folder, boolean onlyFolders) {
         this.mContext = context;
-        this.mContentItems = folder.getContent();
-        this.mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.mContentItems = folder.getContent(onlyFolders);
+        this.mLayoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.doodeec.filemanager;
 
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -8,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.doodeec.filemanager.FileManagement.StorageManager;
 
@@ -48,8 +48,8 @@ public class SettingsActivity extends ListActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        //TODO open selection dialog
-                        Toast.makeText(SettingsActivity.this, "Select default folder", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(SettingsActivity.this, PickerActivity.class);
+                        startActivity(intent);
                         break;
                 }
             }

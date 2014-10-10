@@ -13,4 +13,6 @@
     <string name="storage_item_text_placeholder">Folder</string>
     <string name="select_mode_title" formatted="false">Select files: %d</string>
 
+    <string name="setting_dialog_title">Pick default folder</string>
+
 </resources>

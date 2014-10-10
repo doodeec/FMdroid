@@ -24,8 +24,9 @@ public class StorageItemHolder {
         mItemName = (TextView) view.findViewById(R.id.storage_item_name);
         mItemIcon = (ImageView) view.findViewById(R.id.storage_item_icon);
 
-        assert (mItemName != null);
-        assert (mItemIcon != null);
+        if (mItemName == null || mItemIcon == null) {
+            throw new AssertionError("Views should not be null");
+        }
     }
 
     public void setSelected(boolean isSelected) {

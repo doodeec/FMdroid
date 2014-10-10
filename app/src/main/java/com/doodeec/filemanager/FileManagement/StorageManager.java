@@ -97,7 +97,9 @@ public class StorageManager {
                 }
 
                 File[] files = folder.getFile().listFiles();
-                assert (files != null);
+                if (files == null) {
+                    throw new AssertionError("Folder files can not be null");
+                }
 
                 //sorts alphabetically
                 Arrays.sort(files);
@@ -122,7 +124,9 @@ public class StorageManager {
      */
     public static boolean closeFolder() {
         StorageItem currentFolder = allContent.get(currentPath);
-        assert (currentFolder != null);
+        if (currentFolder == null) {
+            throw new AssertionError("Current folder must not be null");
+        }
 
         if (currentFolder.getPath().equals(rootFolder.getAbsolutePath())) {
             return false;

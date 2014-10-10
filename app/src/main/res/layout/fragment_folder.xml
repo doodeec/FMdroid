@@ -18,7 +18,5 @@
         android:verticalSpacing="@dimen/gridview_column_spacing"
         android:horizontalSpacing="@dimen/gridview_column_spacing"
         android:stretchMode="columnWidth"
-        android:gravity="center">
-
-    </GridView>
+        android:gravity="center" />
 </com.doodeec.filemanager.UIComponents.SlidingFrameLayout>

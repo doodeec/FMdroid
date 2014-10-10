@@ -42,7 +42,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
         mSelectedFiles = new ArrayList<StorageItem>();
 
         // just checking if fragment transaction won't crash
-        assert (findViewById(R.id.content_view) != null);
+        if (findViewById(R.id.content_view) == null) {
+            throw new AssertionError("Fragment content not available");
+        }
 
         if (StorageManager.getCurrentFolder() == null) {
             StorageManager.readFolder(new Runnable() {
@@ -62,7 +64,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
      * @param folder folder to open
      */
     public void readAndOpenFolderFragment(final StorageItem folder) {
-        assert (folder != null);
+        if (folder == null) {
+            throw new AssertionError("Can not open fragment of null folder");
+        }
 
         StorageManager.readFolder(folder, new Runnable() {
             @Override
@@ -84,7 +88,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
      * Updates title in action bar to given string
      */
     private void updateActionbarFolderTitle(String title) {
-        assert (getActionBar() != null);
+        if (getActionBar() == null) {
+            throw new AssertionError("Actionbar is not available");
+        }
         getActionBar().setTitle(title);
     }
 
@@ -92,7 +98,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
      * Updates title in action bar to corresponding path
      */
     private void updateActionbarFolderTitle() {
-        assert (getActionBar() != null);
+        if (getActionBar() == null) {
+            throw new AssertionError("Actionbar is not available");
+        }
         getActionBar().setTitle(StorageManager.getCurrentFolder().getPath());
     }
 
@@ -141,7 +149,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
      * @param file file to open
      */
     private void openFileIntent(StorageItem file) {
-        assert (file != null);
+        if (file == null) {
+            throw new AssertionError("Can not open file of null");
+        }
 
         Uri fileToOpen = Uri.fromFile(file.getFile());
         Intent openIntent = new Intent(android.content.Intent.ACTION_VIEW);
@@ -174,7 +184,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
     private void reloadFolderContent() {
         Log.d("FMDROID", "reload current folder content");
         FolderFragment topFragment = getTopFragment();
-        assert (topFragment != null);
+        if (topFragment == null) {
+            throw new AssertionError("Top fragment should exist");
+        }
 
         topFragment.setFolder(StorageManager.getCurrentFolder());
         topFragment.notifyAdapter();
@@ -209,7 +221,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
      */
     @Override
     public void onFileSelected(StorageItem clickedItem) {
-        assert (clickedItem != null);
+        if (clickedItem == null) {
+            throw new AssertionError("Clicked item can not be null");
+        }
 
         if (!mSelectModeActive) {
             setSelectionMode(true);
@@ -221,12 +235,6 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
         updateSelectedFilesCountTitle();
     }
 
-    /**
-     * Determines if file is currently selected or not
-     *
-     * @param itemToCheck item to check
-     * @return true if item is present in selected files
-     */
     public boolean isFileSelected(StorageItem itemToCheck) {
         for (StorageItem item : mSelectedFiles) {
             if (item.getFile().getAbsolutePath().equals(itemToCheck.getFile().getAbsolutePath())) {
@@ -248,7 +256,9 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
 
         if (!isOpened) {
             FolderFragment topFragment = getTopFragment();
-            assert (topFragment != null);
+            if (topFragment == null) {
+                throw new AssertionError("Top fragment should exist");
+            }
 
             topFragment.notifyAdapter();
             updateActionbarFolderTitle();
@@ -261,10 +271,10 @@ public class BaseActivity extends Activity implements FolderManipulationInterfac
     private void removeSelectedFiles() {
         for (StorageItem item : mSelectedFiles) {
             // for debug purposes
-            Toast.makeText(this, "Delete " + item.getPath(), Toast.LENGTH_SHORT).show();
-            /*if (!item.getFile().delete()) {
+//            Toast.makeText(this, "Delete " + item.getPath(), Toast.LENGTH_SHORT).show();
+            if (!item.getFile().delete()) {
                 Log.e("FMDROID", "File couldn't be deleted");
-            }*/
+            }
         }
         reloadFolderContent();
     }

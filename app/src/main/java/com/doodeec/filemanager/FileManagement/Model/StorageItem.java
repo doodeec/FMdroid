@@ -7,6 +7,7 @@ import android.util.Log;
 import com.doodeec.filemanager.R;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -63,7 +64,15 @@ public class StorageItem {
     /**
      * @return content children nodes of this node
      */
-    public List<StorageItem> getContent() {
+    public List<StorageItem> getContent(boolean onlyFolders) {
+        if (onlyFolders) {
+            List<StorageItem> folders = new ArrayList<StorageItem>();
+            for (StorageItem item: mContentItems) {
+                if (item.isDirectory) folders.add(item);
+            }
+            return folders;
+        }
+
         return mContentItems;
     }
 
